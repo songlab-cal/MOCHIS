@@ -1,4 +1,4 @@
-# Moment Computation and Hypothesis testing induced by S<sub>n,k</sub> (MOCHIS)
+# MOment Computation and Hypothesis testing Induced by S<sub>n,k</sub> (MOCHIS)
 
 This is the repository for organizing and distributing code and results related to the
 family of spacing-statistics and their associated hypothesis test detailed in:
