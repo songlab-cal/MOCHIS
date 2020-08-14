@@ -15,4 +15,4 @@ manuscript, as well as to perform general one-sample and two sample tests. It co
 * computing the moment sequences associated with the weighted p-norms of S<sub>n,k</sub> and S<sub>k</sub>
 * accurate evaluation of a distribution's CDF given its first m moments
 * performing one- and two-sample tests
-* optimise parameter configurations (p, w) for power against any given set of alternative distributions
+* optimizing parameter configurations (p, w) for power against any given set of alternative distributions
