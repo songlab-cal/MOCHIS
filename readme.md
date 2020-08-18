@@ -3,7 +3,9 @@
 This is the repository for organizing and distributing code and results related to the
 family of spacing-statistics and their associated hypothesis test detailed in:
 
-<em>Insert link to arXiv preprint.</em>
+Erdmann-Pham, D.D., Terhorst, J., and Song, Y.S. 
+<em>Generalized Spacing-Statistics and a New Family of Non-Parametric Tests.</em>
+  Preprint: https://arxiv.org/abs/2008.06664
 
 ## Code
 
