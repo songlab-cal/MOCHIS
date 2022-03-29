@@ -10,7 +10,7 @@ Our software offers an optional interface with Python. All steps relevant to set
 
     :snake: Go to the sibling directory of this directory, named `python`, and download the two files
 
-    - `local_functions_for_R.py`
+    - `local_functions_no_ray.py`
     - `local_functions.py` 
 
     Create a sibling directory `python` and place these Python files under it. 
@@ -52,7 +52,7 @@ Our software offers an optional interface with Python. All steps relevant to set
     :snake: If using Python backend, the working directory ("`CURRENT_WORKING_DIR`") should have a sibling directory named `python` that contains the two Python scripts, as described in Step 1. In other words, one level above the working directory should have this structure.
 
     - `python`
-        - `local_functions_for_R.py`
+        - `local_functions_no_ray.py`
         - `local_functions.py`
     - `CURRENT_WORKING_DIR`
         - `...`
@@ -66,7 +66,7 @@ Our software offers an optional interface with Python. All steps relevant to set
         reticulate::py_install("gmpy2")
         ```
 
-        Uncomment Line 8 of `main_draft0.R` (which is `reticulate::source_python("../python/local_functions_for_R.py")`), and then run `source("main_draft0.R")`. This should load all functions, including Python backend functions, for running our one- and two-sample tests. This step will also reveal any Python package dependencies that you do not already have installed. Please install them within the environment that **reticulate** has set up to interface with Python. This can be accomplished by either directly installing them on the terminal (e.g., `pip install [PACKAGE-NAME]` or `conda install [PACKAGE-NAME]`) or via **reticulate** within R, as shown above.
+        Uncomment Line 8 of `main_draft0.R` (which is `reticulate::source_python("../python/local_functions_no_ray.py")`), and then run `source("main_draft0.R")`. This should load all functions, including Python backend functions, for running our one- and two-sample tests. This step will also reveal any Python package dependencies that you do not already have installed. Please install them within the environment that **reticulate** has set up to interface with Python. This can be accomplished by either directly installing them on the terminal (e.g., `pip install [PACKAGE-NAME]` or `conda install [PACKAGE-NAME]`) or via **reticulate** within R, as shown above.
 
 ## Examples
 
@@ -129,7 +129,7 @@ reticulate::py_install("ray", pip = TRUE)
 # Load functions in back-end R script 
 source("local_functions.R")
 # Load functions written in Python 
-#reticulate::source_python("../python/local_functions_for_R.py")
+#reticulate::source_python("../python/local_functions_no_ray.py")
 reticulate::source_python("../python/local_functions.py")
 ``` 
 
