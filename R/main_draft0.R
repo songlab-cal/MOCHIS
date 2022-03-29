@@ -6,9 +6,8 @@
 # Load functions in back-end R script (change dir if necessary)
 source("~/Documents/research/spacing_stats/012522/local_functions.R")
 # Load functions written in Python (change dir if necessary)
-#reticulate::source_python("~/Documents/research/spacing_stats/012522/local_functions.py")
-#reticulate::source_python("~/Documents/research/spacing_stats/012522/local_functions_numba.py")
-#reticulate::source_python("~/Documents/research/spacing_stats/012522/local_functions_ray.py")
+#reticulate::source_python("local_functions_no_ray.py")
+#reticulate::source_python("../Python/local_functions.py")
 # [!] To do: automate installation of conda env with required Python modules
 
 #' Flexible Non-Parametric One- and Two-Sample Tests (Native R version)

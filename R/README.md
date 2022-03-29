@@ -182,3 +182,7 @@ To do so using R's **reticulate**:
 ```
 reticulate::py_install("aiohttp==3.7")
 ``` 
+
+## Application to scRNA-seq Data
+
+We apply our methods to _Tabula Muris Senis_, a publicly available single cell RNA-seq dataset provided by the Chan-Zuckerberg Biohub. Details are provided in the `tabula-muris-analysis` subdirectory.
