@@ -1,0 +1,7 @@
+This version includes the following update:
+
+(3/24/2022) For large n and large k, a Gaussian approximation to the null distribution (Proposition 5 of Dan's manuscript) is used. The mean and variance of the Gaussian distribution are estimated via Monte Carlo (yielding unbiased estimates) with 10,000 draws.
+
+The current implementation of this Gaussian approximation involves checking if k and n are large enough such that k/n is at least 0.001 (i.e., bounded away from 0).  
+
+(3/28/2022) Found that the Monte Carlo approach introduces bias. An analytical computation is implemented to replace the erroneous approach. For now, this analytical computation is available only for p = 1 and p = 2. General analytical formulae would require further work  (using complex analysis tools). 
