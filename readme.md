@@ -18,7 +18,7 @@ MOCHIS implements tests based on summary statistics computed from points lying i
 
 they also include tests designed to maximize power for a range of alternative hypotheses, including differences in spread and differences in location and scale.
 
-Please see `theory_behind_implementation.pdf`, a manual explaining our software.         
+Please see `theory_behind_implementation.pdf`, a manual explaining our software. 
 
 ## Contributors
 
