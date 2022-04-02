@@ -796,8 +796,12 @@ def get_moment_pvalue(t, n_mom, moment_seq, method="chebyshev", alternative="two
         moment_seq_trunc = moment_seq[:4*(n_mom//4)+1]
         
     # find closest value in pre-computed basket of interpolating polynomials
-    closest_index = np.argmin(np.abs(t-np.linspace(0, 0.998, 501)))
-    dec = np.linspace(0, 0.998, 501)[closest_index] # convert to character and paste into string
+    seq = np.linspace(0, 0.998, 501)
+    seq = [round(i,3) for i in seq]
+    closest_index = np.argmin([np.abs(t-i) for i in seq])
+
+    dec = seq[closest_index] # convert to character and paste into string
+
     
     # open relevant interpolating polynomial
     # [!] To do: Change beginning of path directory when packaging

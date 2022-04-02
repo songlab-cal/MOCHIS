@@ -15,7 +15,6 @@ Given data consisting of either a single sample \eqn{\boldsymbol{x}=(x_1,\ldots,
 '''
 
 def mochis_py(x, p, wList, alternative, approx, n_mom, y=None, force_discrete=False):
-    print(x)
 
     # 1. Get numbr of bins
     k = len(x) + 1
@@ -33,14 +32,12 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, y=None, force_discrete=Fa
         x_ordered = np.append(x_ordered, math.inf) 
         n = len(y) # get sample size / number of balls
 
-        print(x_ordered)
 
         # Construct Snk
         snk = []
         for i in range(k):
             snk.append(((x_ordered[i] <= y) & (y < x_ordered[i+1])).sum())
 
-        print(snk)
         
         # Construct t
         t_arr = [((snk[i]/n)**p) * wList[i] for i in range(k)]
@@ -68,22 +65,20 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, y=None, force_discrete=Fa
             z_score = (t - first_moment) / second_moment**(1/2)
 
             if alternative == "one.sided":
-                return min(stats.norm.cdf(z_score), stats.norm.cdf(-1*z_score))
+                return min(scipy.stats.norm.cdf(z_score), scipy.stats.norm.cdf(-1*z_score))
             else:
-                return 2*min(stats.norm.cdf(z_score), stats.norm.cdf(-1*z_score))
+                return 2*min(scipy.stats.norm.cdf(z_score), scipy.stats.norm.cdf(-1*z_score))
         elif n >= 100 and not force_discrete:
             print("Sample size, n, is large enough, using Sk distribution...")
 
             # compute continuous moments
             print("Computing continuous moments...")
             moment_seq = continuous_moments(m=n_mom, p=p, k=k, wList=wList)
-            #print(moment_seq)
 
             # compute and return p-value
             if approx == 'bernstein':
                 return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
             else:
-                print("here")
                 return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
         else:
             print("Using SnK distribution...")
