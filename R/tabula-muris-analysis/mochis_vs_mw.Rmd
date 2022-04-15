@@ -31,7 +31,6 @@ source("~/Documents/research/spacing_stats/012522/main_draft0.R")
 ```
 
 
-
 # 2 Data
 
 Publicly available _mus musculus_ (house mice) single-cell RNA-seq data from the Chan-Zuckerberg Initiative (also known as _Tabula Muris Senis_) is used. We download senescence datasets from [here](https://cellxgene.cziscience.com/collections/0b9d8a04-bb9d-44da-aa27-705bb65b54eb). These datasets are made up of single cell gene transcript levels measured using Smart-Seq2, across $22$ distinct mice tissues. For each tissue, the cells originate from mice that are either 3 months, 18 months or 24 months old (with the exception of the mammary gland tissue, which has 3 months, 18 months and 21 months). There are also other cell labels like tissue location (identified with guidance from biologists) and mice sex.
@@ -317,7 +316,7 @@ all_tissues <- read.table(paste0(tab_mur_dir,"tissues/tissues.txt"))$V1
 for (tissue in all_tissues) {
   message(date(), paste0(": Reading in and analyzing data from ", tissue))
   
-  if (CRAP) {
+  if (FALSE) {
   #if (file.exists(paste0(tab_mur_dir, "tissues/", tissue, "/mochis_p_val_table.csv"))) {
     message(date(), ": p-value table already generated, moving onto next tissue...")
   } else {
@@ -548,18 +547,18 @@ for (tissue in all_tissues) {
   selected_genes_3_18$TISSUE <- rep(tissue, nrow(selected_genes_3_18))
   tissue_transcript_3_18 <- rbind(tissue_transcript_3_18, selected_genes_3_18)
   
-  selected_genes_18_24 <- tissue_mann_whitney_df[
+  selected_genes_18_24 <- tissue_mochis_df[
     which(p.adjust(
-      tissue_mann_whitney_df$MOCHIS_18_24,
+      tissue_mochis_df$MOCHIS_18_24,
       method = "BH") <= 0.05),] %>% 
     select(c("TRANSCRIPT", "MOCHIS_18_24", "VAR_18_24")) 
   colnames(selected_genes_18_24) <- c("TRANSCRIPT", "MOCHIS", "VARIANCE_RATIO")
   selected_genes_18_24$TISSUE <- rep(tissue, nrow(selected_genes_18_24))
   tissue_transcript_18_24 <- rbind(tissue_transcript_18_24, selected_genes_18_24)
   
-  selected_genes_24_3 <- tissue_mann_whitney_df[
+  selected_genes_24_3 <- tissue_mochis_df[
     which(p.adjust(
-      tissue_mann_whitney_df$MOCHIS_24_3,
+      tissue_mochis_df$MOCHIS_24_3,
       method = "BH") <= 0.05),] %>% 
     select(c("TRANSCRIPT", "MOCHIS_24_3", "VAR_24_3")) 
   colnames(selected_genes_24_3) <- c("TRANSCRIPT", "MOCHIS", "VARIANCE_RATIO")
@@ -855,9 +854,9 @@ grid.draw(my.vd)
 
 **Summary of Findings.** We can see from the Venn diagrams that 
 
-1. In general, there are considerable differences in the genes picked up by Mann-Whitney and MOCHIS. For any pair of age groups, MOCHIS picks up at least $900$ DEGs that were not picked up by Mann-Whitney.
-2. The number of new genes picked up by MOCHIS is the largest for the pair "3m vs 24m" ($=1732$), and smallest for the pair "3m vs 18m" ($=905$).
-3. The number of Mann-Whitney significant genes that are not MOCHIS significant is greatest for the pair "18m vs 24m" ($=3167$) and smallest for the pair "3m vs 18m" ($=753$).  
+1. In general, there are considerable differences in the genes picked up by Mann-Whitney and MOCHIS. For any pair of age groups, MOCHIS picks up at least $750$ DEGs that were not picked up by Mann-Whitney.
+2. The number of new genes picked up by MOCHIS is the largest for the pair "3m vs 18m" ($=905$), and smallest for the pair "3m vs 21m" ($=794$).
+3. The number of Mann-Whitney significant genes that are not MOCHIS significant is greatest for the pair "18m vs 24m" ($=1397$) and smallest for the pair "3m vs 18m" ($=753$).  
 
 ## 3.2 Visualizing Changes in Dispersion
 
@@ -881,7 +880,7 @@ rownames(mochis_unique) <- 1:nrow(mochis_unique)
 #        subset(MOCHIS == MinPValue))
 
 # Pick genes by hand (I choose the ones with smallest p-values in each tissue)
-curated_degs_df <- mochis_unique[c(10,92,356,372,523,842),]
+curated_degs_df <- mochis_unique[c(8,295,347,358,446,688),]
 rownames(curated_degs_df) <- 1:nrow(curated_degs_df)
 
 # Generate plots
@@ -946,7 +945,7 @@ rownames(mochis_unique) <- 1:nrow(mochis_unique)
 #        subset(MOCHIS == MinPValue))
 
 # Pick genes by hand (I choose the ones with smallest p-values in each tissue)
-curated_degs_df <- mochis_unique[c(88,101,179,541,896,1060),]
+curated_degs_df <- mochis_unique[c(6,39,93,139,251,339),]
 rownames(curated_degs_df) <- 1:nrow(curated_degs_df)
 
 # Generate plots
@@ -1011,7 +1010,7 @@ rownames(mochis_unique) <- 1:nrow(mochis_unique)
 #        subset(MOCHIS == MinPValue))
 
 # Pick genes by hand (I choose the ones with smallest p-values in each tissue)
-curated_degs_df <- mochis_unique[c(38,117,593,639,1412,1583),]
+curated_degs_df <- mochis_unique[c(99,142,168,172,590,605),]
 rownames(curated_degs_df) <- 1:nrow(curated_degs_df)
 
 # Generate plots
@@ -1061,7 +1060,7 @@ annotate_figure(combined_plot,
 **Summary of Findings.** We find that 
 
 1. MOCHIS detects shifts in dispersions. These shifts can be in either direction (positive or negative).
-2. Some of the shifts can be attributed to more pronounced zero inflation in one age group than another. This raises an important caveat in our analysis, namely, that our first step of filtering out genes that have more than $20\%$ zero-inflation rate effectively removes all contribution by technical noise to the data. If we are skeptical, then we must find other ways to effectively remove contribution by technical noise. 
+2. Some of the shifts can be attributed to more pronounced zero inflation in one age group than another (based on post-analysis visualizations). This raises an important caveat in our analysis, namely, that our first step of filtering out genes that have more than $20\%$ zero-inflation rate effectively removes all contribution by technical noise to the data. If we are skeptical, then we must find other ways to effectively remove contribution by technical noise. 
 
 ## 3.3 Other Interesting Results
 
@@ -1321,13 +1320,13 @@ rownames(curated_persistent_degs) <- 1:nrow(curated_persistent_degs)
 table(curated_persistent_degs$TISSUE)
 ```
 
-From the chunk above, we find that $41$ tissue-specific genes are persistently DEGs. Moreover, most of them come from the trachea and the heart. Let us visualize some of these genes. 
+From the chunk above, we find that $65$ tissue-specific genes are persistently DEGs. Moreover, most of them come from the bladder lumen and the heart. Let us visualize some of these genes. 
 
 ```{r mochis_analysis_3_5, warning = FALSE, message = FALSE, fig.align = 'center'}
 ## Visualizing MOCHIS-exclusive persistently DEGs
 # Generate plots of gene expressions for persistent DEGs
 plot_list <- list()
-for (i in c(1,2,3,5,14,17,28,32)) {
+for (i in c(1,2,15,17,28,32,35,50)) {
   # Get raw read counts data for that tissue and transcript
   tissue <- curated_persistent_degs[i,]$TISSUE
   transcript <- curated_persistent_degs[i,]$TRANSCRIPT
@@ -1435,7 +1434,7 @@ for (i in c(1,2,3,5,14,17,28,32)) {
 }
 
 ## Generate all pairwise plots for each persistent DEG
-for (i in c(1,2,3,5,14,17,28,32)) {
+for (i in c(1,2,15,17,28,32,35,50)) {
   # Get raw read counts data for that tissue and transcript
   tissue <- curated_persistent_degs[i,]$TISSUE
   transcript <- curated_persistent_degs[i,]$TRANSCRIPT
@@ -1454,7 +1453,7 @@ for (i in c(1,2,3,5,14,17,28,32)) {
 }
 ```
 
-Additionally, let us investigate the direction of dispersion changes for the $41$ DEGs.
+Additionally, let us investigate the direction of dispersion changes for the $65$ DEGs.
 
 ```{r mochis_analysis_3_6, fig.align = 'center'}
 ## Generate dataframe summarizing direction of dispersion changes
@@ -1489,11 +1488,178 @@ kableExtra::kable(persistent_degs_direction_df) %>%
 
 **Summary of Findings.** When investigating the direction of change in dispersion, we find that 
 
-1. Except for mammary gland, all tissues exhibit a positive change (increase) in dispersion from 3m to 18m. 
+1. Except for mammary gland, all tissues exhibit a positive change (increase) in dispersion as mice get older. 
 2. There is heterogeneity in change in dispersion from 18m to 24m.
 3. Across the $22$ tissues, there is heterogeneity as to whether more genes experience positive change in dispersion from 3m to 24m than from 3m to 18m.
 
 When investigating genes that are persistently differentiated over the mice lifecourse, we find that
 
-4. There are $2174$ persistently DEGs, of which $41$ are _entirely_ missed by Mann-Whitney test.
-5. For the $41$ persistently DEGs detected by MOCHIS, we find heterogeneous patterns of change in dispersion over time. In particular, it is _not always true_ that the change in dispersion is unidirectional (usually thought to be positive as an organism ages).
+4. There are $3575$ persistently DEGs, of which $65$ are _entirely_ missed by Mann-Whitney test.
+5. For the $65$ persistently DEGs detected by MOCHIS, we find heterogeneous patterns of change in dispersion over time. In particular, it is _not always true_ that the change in dispersion is unidirectional (usually thought to be positive as an organism ages).
+
+
+```{r for_dan, echo = FALSE, eval = FALSE}
+## IGNORE THIS CHUNK WHEN REPRODUCING IN PYTHON
+tissue_transcript_for_dan <- tissue_transcript_combined %>% 
+  subset(AGE3M_VS_AGE18M == 1 & AGE18M_VS_AGE24M == 1 & AGE3M_VS_AGE24M == 0) 
+rownames(tissue_transcript_for_dan) <- 1:nrow(tissue_transcript_for_dan)
+## Generate dataframe summarizing direction of dispersion changes
+for_dan_direction_df <- data.frame(TISSUE = character(),
+                                   TRANSCRIPT = character(),
+                                   AGE3M_VS_AGE18M = character(),
+                                   AGE18M_VS_AGE24M = character(),
+                                   AGE3M_VS_AGE24M = character())
+
+for_dan_raw_df <- results_df %>% subset(INV_24_3 == "A")
+for (i in 1:nrow(tissue_transcript_for_dan)) {
+  # Get raw read counts data for that tissue and transcript
+  tissue <- tissue_transcript_for_dan[i,]$TISSUE
+  transcript <- tissue_transcript_for_dan[i,]$TRANSCRIPT
+  
+  results_df <- read.csv(paste0(tab_mur_dir,"tissues/",tissue,"/mochis_p_val_table.csv"))
+  
+  relevant_row <- results_df %>% subset(TRANSCRIPT == transcript)
+  for_dan_direction_df <- rbind(for_dan_direction_df, 
+                                data.frame(TISSUE = tissue,
+                                           TRANSCRIPT = transcript,
+                                           AGE3M_VS_AGE18M = ifelse(relevant_row$INV_3_18, "-", "+"),
+                                           AGE18M_VS_AGE24M = ifelse(relevant_row$INV_18_24, "-", "+"),
+                                           AGE3M_VS_AGE24M = ifelse(relevant_row$INV_24_3, "-", "+")))
+  for_dan_raw_df <- rbind(for_dan_raw_df, relevant_row)
+}
+
+# Print tissue-wide counts for dispersion shift directions
+kableExtra::kable(for_dan_direction_df) %>% 
+  kableExtra::kable_styling(position = "center", 
+                            latex_options="scale_down")
+
+
+# Generate some plots
+# Generate plots of gene expressions for persistent DEGs
+plot_list <- list()
+for (i in c(1,13,14,26,34,39,63,66)) {
+  # Get raw read counts data for that tissue and transcript
+  tissue <- tissue_transcript_for_dan[i,]$TISSUE
+  transcript <- tissue_transcript_for_dan[i,]$TRANSCRIPT
+  
+  # Create local list
+  this_deg_plot_list <- list()
+  # Open tissue-specific data and select gene
+  tissue_smartseq2_data <- readRDS(paste0(tab_mur_dir, "tissues/",tissue,"/local.rds"))
+    
+  smartseq2_sparse_mat <- tissue_smartseq2_data@assays$RNA
+  this_gene_exp_level <- data.frame(
+    TRANSCRIPT = smartseq2_sparse_mat@counts[transcript, 1:dim(smartseq2_sparse_mat@counts)[2]],
+    AGE = tissue_smartseq2_data$age)
+    
+  # Separate out the 3m and 18m reads (counts/million)
+  to_plot <- this_gene_exp_level %>% subset(AGE == "3m" | AGE == "18m")
+  
+  this_deg_plot_list[[1]] <- ggplot(to_plot, aes(x = log(TRANSCRIPT+1))) +
+    geom_histogram(aes(y = ..density.., fill = factor(AGE)),
+                   position = position_dodge2()) +
+    #geom_density(aes(fill = factor(AGE)), alpha = 0.5) +
+    theme_bw() +
+    ggtitle(paste0(transcript,"\nin ", tissue)) +
+    xlab("log(Counts-per-Million + 1)") +
+    guides(fill=guide_legend("Age Group"))  + 
+    scale_fill_manual(values = c("#1b9e77", "#d95f02")) +
+    theme(legend.position = "none",
+          plot.title = element_text(hjust = 0.5,
+                                    face = "plain",
+                                    size = 10))
+  
+  # Separate out the 18m and 24m reads (counts/million)
+  # [!] Recall that mammary-gland transcripts only have 3m, 18m and 21m age groups
+  if (tissue == "mammary-gland") {
+    to_plot <- this_gene_exp_level %>% subset(AGE == "18m" | AGE == "21m")
+    
+    this_deg_plot_list[[2]] <- ggplot(to_plot, aes(x = log(TRANSCRIPT+1))) +
+      geom_histogram(aes(y = ..density.., fill = factor(AGE)),
+                   position = position_dodge2()) +
+      #geom_density(aes(fill = factor(AGE)), alpha = 0.5) +
+      theme_bw() +
+      ggtitle(paste0(transcript,"\nin ", tissue, "*")) +
+      xlab("log(Counts-per-Million + 1)") +
+      guides(fill=guide_legend("Age Group"))  + 
+      scale_fill_manual(values = c("#d95f02", "#7570b3")) +
+      theme(legend.position = "none",
+            plot.title = element_text(hjust = 0.5,
+                                      face = "plain",
+                                      size = 10))
+  } else {
+    to_plot <- this_gene_exp_level %>% subset(AGE == "18m" | AGE == "24m")
+    
+    this_deg_plot_list[[2]] <- ggplot(to_plot, aes(x = log(TRANSCRIPT+1))) +
+      geom_histogram(aes(y = ..density.., fill = factor(AGE)),
+                   position = position_dodge2()) +
+      #geom_density(aes(fill = factor(AGE)), alpha = 0.5) +
+      theme_bw() +
+      ggtitle(paste0(transcript,"\nin ", tissue)) +
+      xlab("log(Counts-per-Million + 1)") +
+      guides(fill=guide_legend("Age Group"))  + 
+      scale_fill_manual(values = c("#d95f02", "#7570b3")) +
+      theme(legend.position = "none",
+            plot.title = element_text(hjust = 0.5,
+                                      face = "plain",
+                                      size = 10))
+  }
+  
+  # Separate out the 3m and 24m reads (counts/million)
+  # [!] Recall that mammary-gland transcripts only have 3m, 18m and 21m age groups
+  if (tissue == "mammary-gland") {
+    to_plot <- this_gene_exp_level %>% subset(AGE == "3m" | AGE == "21m")
+    
+    this_deg_plot_list[[3]] <- ggplot(to_plot, aes(x = log(TRANSCRIPT+1))) +
+      geom_histogram(aes(y = ..density.., fill = factor(AGE)),
+                   position = position_dodge2()) +
+      #geom_density(aes(fill = factor(AGE)), alpha = 0.5) +
+      theme_bw() +
+      ggtitle(paste0(transcript,"\nin ", tissue, "*")) +
+      xlab("log(Counts-per-Million + 1)") +
+      guides(fill=guide_legend("Age Group"))  + 
+      scale_fill_manual(values = c("#1b9e77", "#7570b3")) +
+      theme(legend.position = "none",
+            plot.title = element_text(hjust = 0.5,
+                                      face = "plain",
+                                      size = 10))
+  } else {
+    to_plot <- this_gene_exp_level %>% subset(AGE == "3m" | AGE == "24m")
+    
+    this_deg_plot_list[[3]] <- ggplot(to_plot, aes(x = log(TRANSCRIPT+1))) +
+      geom_histogram(aes(y = ..density.., fill = factor(AGE)),
+                   position = position_dodge2()) +
+      #geom_density(aes(fill = factor(AGE)), alpha = 0.5) +
+      theme_bw() +
+      ggtitle(paste0(transcript,"\nin ", tissue)) +
+      xlab("log(Counts-per-Million + 1)") +
+      guides(fill=guide_legend("Age Group"))  + 
+      scale_fill_manual(values = c("#1b9e77", "#7570b3")) +
+      theme(legend.position = "none",
+            plot.title = element_text(hjust = 0.5,
+                                      face = "plain",
+                                      size = 10))
+  }
+  
+  plot_list[[i]] <- this_deg_plot_list
+}
+
+## Generate all pairwise plots for each persistent DEG
+for (i in c(1,13,14,26,34,39,63,66)) {
+  # Get raw read counts data for that tissue and transcript
+  tissue <- tissue_transcript_for_dan[i,]$TISSUE
+  transcript <- tissue_transcript_for_dan[i,]$TRANSCRIPT
+  
+  # Generate combined plot
+  combined_plot <- ggarrange(plot_list[[i]][[1]] + ggtitle(""), 
+                             plot_list[[i]][[2]] + ggtitle(""),
+                             plot_list[[i]][[3]] + ggtitle(""),
+                             nrow = 1, ncol = 3,
+                             legend = "bottom")
+  # Annotate plot
+  annotate_figure(combined_plot, 
+                  top = text_grob(paste0("Distribution of Transcript Counts\n(", 
+                                         transcript, " in ",  tissue, ")"), 
+                                  face = "bold", size = 12)) %>% plot()
+}
+```
