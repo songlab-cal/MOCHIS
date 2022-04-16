@@ -25,7 +25,7 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, y=None, force_discrete=Fa
 
     # 3. Compute test statistic t and return its p-value
     # 3.1 Case 1: y is not NULL
-    if y:
+    if y is not None:
         # construct ordering of x_i's
         x_ordered = np.sort(np.array(x))
         x_ordered = np.insert(x_ordered, 0, -math.inf)
