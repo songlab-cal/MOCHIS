@@ -3,6 +3,7 @@
 ### Incorporates all methods (discrete, continuous)  ###
 ############## Created on Jan 27, 2022 #################
 ############### Edited on Mar 24, 2022 #################
+############### Edited on Apr 15, 2022 #################
 ########################################################
 
 # Try gmp rational and integer approach
@@ -12,6 +13,7 @@ library(Rmpfr)
 library(gmp)
 library(doParallel)
 library(hitandrun) # for simplex simulations
+library(arrangements) # for random compositions
 
 #' Vector Convolution
 #'
@@ -410,11 +412,12 @@ getBernsteinPValue <- function(t, n_mom, p, k, moment_seq, alternative = "two.si
   
   if (t < extrema[1] | t > extrema[2]) {
     warning("The test statistic value exceeds model-free bounds for the test statistic.")
+    message(paste0("Theoretical maximum = ", extrema[2], "; theoretical minimum = ", extrema[1], "; observed statistic = ", t))
     return(0)
   }  else  {
     to_return <- getCDF(t) 
-    assertthat::assert_that(to_return <= 1 & to_return >=0, 
-                             msg = "Bernstein approximation is inaccurate.")
+    #assertthat::assert_that(to_return <= 1 & to_return >=0, 
+    #                         msg = "Bernstein approximation is inaccurate.")
     if (alternative == "two.sided") {
       return(2 * min(to_return, 1-to_return))  
     } else {
@@ -463,18 +466,70 @@ getMomentPValue <- function(t, n_mom, moment_seq, method = "chebyshev", alternat
                                            "/coeff_list_m", 
                                            n_mom, "_", dec, ".txt"), 
                                     numerals = "no.loss")
-  lagrange_poly_precise_coefs <- Rmpfr::mpfr(lagrange_poly_coefs$V1, 3000)
+  lagrange_poly_precise_coefs <- Rmpfr::mpfr(lagrange_poly_coefs$V1, 5000)
   
   # compute inner product
-  precise_moments <- Rmpfr::mpfr(moment_seq_trunc, 3000)
+  precise_moments <- Rmpfr::mpfr(moment_seq_trunc, 5000)
   to_return <- as.numeric(sum(precise_moments * lagrange_poly_precise_coefs))
   #print(to_return)
-  assertthat::assert_that(to_return <= 1 & to_return >=0, 
-                          msg = paste0(method, " approximation is inaccurate."))
+  #assertthat::assert_that(to_return <= 1 & to_return >=0, 
+  #                        msg = paste0(method, " approximation is inaccurate."))
   if (alternative == "two.sided") {
     return(2 * min(to_return, 1-to_return))  
   } else {
     return(min(to_return, 1-to_return))
+  }
+}
+
+#' Approximate \eqn{p}-value by Resampling Integer Compositions
+#' 
+#' Given the value of the test statistic \eqn{t}, the sample sizes \eqn{n} and \eqn{k}, 
+#' power exponent \eqn{p} and vector of weights that together determine the test statistic 
+#' (by default \eqn{n\geqslant k}), as well as the user-specified resampling number 
+#' (by default this is \eqn{5000}), performs resampling from the collection of integer compositions 
+#' to approximate the \eqn{p}-value of the observed test statistic.
+#' 
+#' The function returns a two-sided \eqn{p}-value, which is more conservative. Users can choose other
+#' \eqn{p}-values corresponding to different alternatives; see documentation on `alternative` below.
+#' Note that the interpretation of the choice of `alternative` depends on the choice of weight vector.
+#' For example, a weight vector that is a quadratic kernel will upweight the extreme components of 
+#' the weight vector. For this choice, setting `alternative` to be `bigger` translates into an alternative 
+#' hypothesis of a bigger spread in the larger sample (the one with sample size \eqn{n}).   
+#'  
+#' Dependencies: arrangements::compositions
+#' @param t Value of test statistic \eqn{||S_{n,k}(D)/n||_{p,\boldsymbol{w}}^p} computed from data \eqn{D}
+#' @param n Sample size of \eqn{y}
+#' @param k Sample size of \eqn{x}
+#' @param p Power exponent of test statistic
+#' @param wList Weight vector
+#' @param alternative Character string that should be one of `two.sided`, `bigger` or `smaller` (default is `two.sided`)
+#' @return p-value (scalar)
+#' @examples
+#' 
+#' getCompositionPValue(t = 0.5, n = 50, k = 11, p = 1, wList = (10:0)/10)
+#' getCompositionPValue(t = 0.2,n_mom = 100, moment_seq = continuousMoments(100,2,5))
+#'
+getCompositionPValue <- function(t, n, k, p, wList, alternative = "two.sided", resamp_number = 5000) {
+  # Make sure that alternative is well-defined
+  assertthat::assert_that((alternative == "two.sided" | alternative == "bigger" | alternative == "smaller"), 
+                          msg = "Please specify a valid alternative (two.sided, bigger, or smaller)")
+  
+  # Sample test statistic and compute empirical CDF at t
+  resampled_ts <- ((compositions(n = n, k = k, nsample = resamp_number)/n)^p %*% wList) %>% as.vector()
+  cdf_at_t <- mean(resampled_ts < t) 
+  
+  # Compute p-value
+  if (alternative == "two.sided") {
+    message(date(), ": Computing two-sided p-value")
+    return(2*min(cdf_at_t, 1 - cdf_at_t))
+    
+  } else if (alternative == "bigger") {
+    message(date(), ": Computing one-sided p-value with alternative set to bigger")
+    return(cdf_at_t)
+    
+  } else {
+    message(date(), ": Computing one-sided p-value with alternative set to smaller")
+    return(1 - cdf_at_t)
   }
 }
 

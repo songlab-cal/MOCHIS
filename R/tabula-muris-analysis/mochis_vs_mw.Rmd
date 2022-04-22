@@ -964,8 +964,8 @@ for (i in 1:nrow(curated_degs_df)) {
                                              1:dim(smartseq2_sparse_mat@counts)[2]],
     AGE = tissue_smartseq2_data$age)
     
-  # Separate out the 3m and 18m reads (counts/million)
-  to_plot <- this_gene_exp_level %>% subset(AGE == "3m" | AGE == "18m")
+  # Separate out the 18m and 24m reads (counts/million)
+  to_plot <- this_gene_exp_level %>% subset(AGE == "18m" | AGE == "24m")
   
   plot_list[[i]] <- ggplot(to_plot, aes(x = log(TRANSCRIPT+1))) +
     geom_histogram(aes(y = ..density.., fill = factor(AGE)), 
@@ -1029,8 +1029,8 @@ for (i in 1:nrow(curated_degs_df)) {
                                              1:dim(smartseq2_sparse_mat@counts)[2]],
     AGE = tissue_smartseq2_data$age)
     
-  # Separate out the 3m and 18m reads (counts/million)
-  to_plot <- this_gene_exp_level %>% subset(AGE == "3m" | AGE == "18m")
+  # Separate out the 3m and 24m reads (counts/million)
+  to_plot <- this_gene_exp_level %>% subset(AGE == "3m" | AGE == "24m")
   
   plot_list[[i]] <- ggplot(to_plot, aes(x = log(TRANSCRIPT+1))) +
     geom_histogram(aes(y = ..density.., fill = factor(AGE)),

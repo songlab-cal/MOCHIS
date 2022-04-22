@@ -1,13 +1,16 @@
 ######################################################
 ######## Main Function for Computing p-values ########
 ############## Edited on Mar 24, 2022 ################
+############## Edited on Apr 15, 2022 ################
 ######################################################
 
 # Load functions in back-end R script (change dir if necessary)
 source("~/Documents/research/spacing_stats/012522/local_functions.R")
+#source("/global/scratch/projects/fc_songlab/alan/tree_topologies/package/local_functions.R")
 # Load functions written in Python (change dir if necessary)
-#reticulate::source_python("local_functions_no_ray.py")
-#reticulate::source_python("../Python/local_functions.py")
+#reticulate::source_python("~/Documents/research/spacing_stats/012522/local_functions.py")
+#reticulate::source_python("~/Documents/research/spacing_stats/012522/local_functions_numba.py")
+#reticulate::source_python("~/Documents/research/spacing_stats/012522/local_functions_ray.py")
 # [!] To do: automate installation of conda env with required Python modules
 
 #' Flexible Non-Parametric One- and Two-Sample Tests (Native R version)
@@ -41,7 +44,7 @@ source("~/Documents/research/spacing_stats/012522/local_functions.R")
 #' @param p Exponent value in defining test statistic (must be integer for continuous moments)
 #' @param wList Vector of weights. It should always have length one more than the length of \eqn{x}
 #' @alternative How p-value should be computed (choose `one.sided` or `two.sided`)
-#' @approx Which approximation method to use (choose `bernstein`, `chebyshev` or `jacobi`)
+#' @approx Which approximation method to use (choose `resample`, `bernstein`, `chebyshev`, `jacobi`)
 #' @n_mom The number of moments to accompany the approximation (recommended 200, if not at least 100)
 #' @force_discrete In the two-sample case, whether to use discrete moments even if \eqn{n} is large enough (default is FALSE)
 #' @examples 
@@ -86,10 +89,17 @@ mochisR <- function(x, y = NULL,
     }
     
     # construct t
-    t <- sum((Snk/n)^p * wList)
+    if (approx == "resample" & !(n >= 100 & k >= 50 & k/n >= 1e-3 & (p == 1 | p == 2))) {
+      t <- sum(((Snk+1)/(n+k)^p * wList))
+      message(date(), ": Adjusting n and k for resampling")
+    } else {
+      t <- sum((Snk/n)^p * wList)
+    }
     message(date(), ": The test statistic for the data is ", t)
     
-    # decide whether to use large n asymptotics or not
+    
+    # Decide on an approximation:
+    # First, decide whether to use large n, large k asymptotics
     if (n >= 100 & k >= 50 & k/n >= 1e-3 & (p == 1 | p == 2)) {
       message(
         date(),
@@ -130,6 +140,14 @@ mochisR <- function(x, y = NULL,
         return(2*min(pnorm(z_score), pnorm(-z_score)))
         #return(2 * min(mean(simplex_samples < t), 1 - mean(simplex_samples < t)))
       }
+    } else if (approx == "resample") {
+      message(date(), 
+              ": Using resampling approach, with resampling number 5000, to approximate p-value...")
+      return(getCompositionPValue(t = t, n = n + k, k = k, p = p, 
+                           wList = wList,
+                           alternative = alternative,
+                           resamp_number = 5000))
+      
     } else if (n >= 100 & !force_discrete) {
       message(date(), ": Sample size, n, is large enough, using Sk distribution...")
       
