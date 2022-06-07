@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='MOCHIS',
-    version='1.2.1',
+    version='1.2.2',
     description='Welcome to MOCHIS (MOment Computation and Hypothesis testing Induced by S_n,k), software for implementing flexible and exact two-sample tests, with applications to single cell genomics. It is based on the work of Erdmann-Pham et al. (2022+).',
     author='Xurui Chen',
     author_email='xuruichen@berkeley.edu',

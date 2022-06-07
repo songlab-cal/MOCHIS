@@ -8,7 +8,7 @@ import combalg.subset as subset
 import math
 
 gmpy2.get_context().precision=5000
-ray.init(log_to_driver=False)
+#ray.init(log_to_driver=False)
 
 def _factorial(num):
     '''

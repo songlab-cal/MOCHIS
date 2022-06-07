@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: MOCHIS
-Version: 1.2.1
+Version: 1.2.2
 Summary: Welcome to MOCHIS (MOment Computation and Hypothesis testing Induced by S_n,k), software for implementing flexible and exact two-sample tests, with applications to single cell genomics. It is based on the work of Erdmann-Pham et al. (2022+).
 Author: Xurui Chen
 Author-email: xuruichen@berkeley.edu
