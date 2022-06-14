@@ -3,6 +3,12 @@ import numpy as np
 import math
 import scipy 
 
+def _simplex_sample(n, N): 
+    res = []
+    for _ in range(N):
+        k = np.random.exponential(scale=1.0, size=n) 
+        res.append(np.array( k / sum(k)))
+    return np.array(res)
 
 def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=None, force_discrete=False):
     '''
@@ -79,6 +85,8 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
     mochis_py(x = [abs(np.random.normal()) for i in range(10)], y = [abs(np.random.normal()) for i in range(100)], p = 2, wList = [1 for i in range(11)], alternative = "two.sided", approx = "jacobi", n_mom = 200) 
     mochis_py(x = [abs(np.random.normal()) for i in range(30)], y = [abs(np.random.normal()) for i in range(100)], p = 2, wList = [1 for i in range(11)], alternative = "two.sided", approx = "resample", resamp_number = 5000)
     '''
+    if type != "unbiased" or type != "valid" or type != "both":
+        raise IOError("")
     
     # 1. Get numbr of bins
     k = len(x) + 1
@@ -135,7 +143,7 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
                 return 2*min(scipy.stats.norm.cdf(z_score), scipy.stats.norm.cdf(-1*z_score))
         elif approx == "resample":
             print("Using resampling approach, with resampling number 5000, to approximate p-value...")
-            return get_composition_pvalue(t=t, n=n, k=k, p=p, wList=wList, alternative=alternative, resamp_number=5000)
+            return get_composition_pvalue(t=t, n=n, k=k, p=p, wList=wList, alternative=alternative, resamp_number=5000, type=unbiased)
         elif n >= 100 and not force_discrete:
             print("Sample size, n, is large enough, using Sk distribution...")
 
@@ -147,7 +155,7 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
             if approx == 'bernstein':
                 return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
             else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
+                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative, type="unbiased")
         else:
             print("Using SnK distribution...")
             # compute discrete moments
@@ -159,7 +167,7 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
             if approx == 'bernstein':
                 return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
             else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
+                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative, type="unbiased")
     
     # y is null -> use continuous moments
     else:
@@ -174,15 +182,59 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
 
         # construct t
         t = sum((Sk[i]**p)*wList[i] for i in range(len(wList)))
-        
-        # construct moments
-        moment_seq = continuous_moments(m=n_mom, p=p, k=k, wList=wList)
 
-        # compute and return p-value
-        if approx == 'bernstein':
-            return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
+        # decide on approximation
+        if approx == "resample":
+            print("Using resampling approach on continuous simplex, with resampling number " + str(resamp_number) + ", to approximate p-value...")
+            resampled_ts = np.matmul(np.power(_simplex_sample(n=k, N=resamp_number), p), wList)
+            
+            cdf_at_t = np.mean(resampled_ts < t)
+            cdf_at_t_upp_tail = 1 - np.mean(np.append(resampled_ts,[t]) >= t)
+            cdf_at_t_low_tail = np.mean(np.append(resampled_ts,[t]) <= t)
+
+            if alternative == "two.sided":
+                print("Computing two-sided p-value")
+                if type == "unbiased":
+                    return 2*min(cdf_at_t, 1-cdf_at_t)
+                elif type == "valid":
+                    return 2*min(cdf_at_t_low_tail, 1-cdf_at_t_upp_tail)
+                else:
+                    unbiased = 2*min(cdf_at_t, 1-cdf_at_t)
+                    valid = 2*min(cdf_at_t_low_tail, 1-cdf_at_t_upp_tail)
+                    return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+            
+            elif alternative == "greater":
+                print("Computing one-sided p-value with alternative set to greater")
+                if type == "unbiased":
+                    return 1-cdf_at_t
+                elif type == "valid":
+                    return 1-cdf_at_t_upp_tail
+                else:
+                    unbiased = 1-cdf_at_t
+                    valid = 1-cdf_at_t_upp_tail
+                    return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+            
+            else:
+                print("Computing one-sided p-value with alternative set to less")
+                if type == "unbiased":
+                    return cdf_at_t
+                elif type == "valid":
+                    return cdf_at_t_low_tail
+                else:
+                    unbiased = cdf_at_t 
+                    valid = cdf_at_t_low_tail
+                    return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+        
         else:
-            return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
+        
+            # construct moments
+            moment_seq = continuous_moments(m=n_mom, p=p, k=k, wList=wList)
+
+            # compute and return p-value
+            if approx == 'bernstein':
+                return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
+            else:
+                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative, type="unbiased")
 
 
 
