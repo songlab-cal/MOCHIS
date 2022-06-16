@@ -876,7 +876,7 @@ def _single_comp(n,k):
     Returns
     -------
     list
-        a list of :math:`k` elements which sum to :math:`n`
+        a list of k-elements which sum to n
 
     '''
     a = subset.random_k_element(range(1, n + k), k - 1)
@@ -920,14 +920,14 @@ def _compositions(n, k, nsample):
     return np.array(total_compositions)
 
 
-def get_composition_pvalue(t, n, k, p, wList, alternative, resamp_number, type):
+def get_composition_pvalue(t, n, k, p, wList, alternative="two.sided", resamp_number=10000, type="unbiased"):
     '''
     Approximate p-value by Resampling Integer Compositions
     
     Given the value of the test statistic :math:`t`, the sample sizes :math:`n` and :math:`k`,
     power exponent :math:`p` and vector of weights that together determine the test statistic
-    (by default :math:`n\\geqslant k`), as well as the user-specified resampling number, 
-    performs resampling from the collection of integer compositions
+    (by default :math:`n\\geqslant k`), as well as the user-specified resampling number
+    (by default this is :math:`5000`), performs resampling from the collection of integer compositions
     to approximate the p-value of the observed test statistic.
 
     The function returns a two-sided p-value by default, which is more conservative. Users can
@@ -955,8 +955,6 @@ def get_composition_pvalue(t, n, k, p, wList, alternative, resamp_number, type):
         Character string that should be one of "`two.sided`" (default), "`greater`" or "`less`"
     resamp_number: integer
         Number of compositions of :math:`n` to draw (default is 5000)
-    type: string
-        Character string that should be one of "`unbiased`", "`valid`" or "`both`"
 
 
     Returns
@@ -964,44 +962,59 @@ def get_composition_pvalue(t, n, k, p, wList, alternative, resamp_number, type):
     float
         p-value
     '''
-    # Sample test statistic and compute empirical CDF at t
-    resampled_ts = np.matmul(np.power(np.divide(_compositions(n, k, nsample=resamp_number), n), p), wList)
-    cdf_at_t = np.mean(resampled_ts < t)
-    cdf_at_t_upp_tail = 1 - np.mean(np.append(resampled_ts,[t]) >= t)
-    cdf_at_t_low_tail = np.mean(np.append(resampled_ts,[t]) <= t)
-    
-    if alternative == "two.sided":
-        print("Computing two-sided p-value")
-        if type == "unbiased":
-            return 2*min(cdf_at_t, 1-cdf_at_t)
-        elif type == "valid":
-            return 2*min(cdf_at_t_low_tail, 1-cdf_at_t_upp_tail)
+    # if n and k are small, compute exact probability by enumerating all k-compositions of n
+    if n <= 40 and k <= 10:
+        print("n and k are small enough, computing exact p-value...")
+        exact_ts = np.matmul(np.power(np.divide(_compositions(n, k, nsample=math.comb(n-1,k-1)), n), p), wList)
+
+        if alternative == "two.sided":
+            print("Computing two-sided p-value")
+            upper_tail = np.mean(exact_ts >= t)
+            cdf_at_t = np.mean(exact_ts <= t)
+            return 2*np.min(cdf_at_t, upper_tail)
+        elif alternative == "greater":
+            print("Computing exact one-sided p-value with alternative set to greate")
+            return mean(exact_ts >= t)
         else:
-            unbiased = 2*min(cdf_at_t, 1-cdf_at_t)
-            valid = 2*min(cdf_at_t_low_tail, 1-cdf_at_t_upp_tail)
-            return [unbiased, valid]
-            #return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
-    
-    elif alternative == "greater":
-        print("Computing one-sided p-value with alternative set to greater")
-        if type == "unbiased":
-            return 1-cdf_at_t
-        elif type == "valid":
-            return 1-cdf_at_t_upp_tail
-        else:
-            unbiased = 1-cdf_at_t
-            valid = 1-cdf_at_t_upp_tail
-            return [unbiased, valid]
-            #return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+            print("Computing exact one-sided p-value with alternative set to less")
+            return mean(exact_ts <= t)
     
     else:
-        print("Computing one-sided p-value with alternative set to less")
-        if type == "unbiased":
-            return cdf_at_t
-        elif type == "valid":
-            return cdf_at_t_low_tail
+        # otherwise, sample test statistic and compute empirical CDF at t
+        resampled_ts = np.matmul(np.power(np.divide(_compositions(n, k, nsample=resamp_number), n), p), wList)
+        cdf_at_t = np.mean(resampled_ts < t)
+        cdf_at_t_upp_tail = 1 - np.mean(np.append(resampled_ts,[t]) >= t)
+        cdf_at_t_low_tail = np.mean(np.append(resampled_ts,[t]) <= t)
+
+        if alternative == "two.sided":
+            print("Computing two-sided p-value")
+            if type == "unbiased":
+                return 2*min(cdf_at_t, 1-cdf_at_t)
+            elif type == "valid":
+                return 2*min(cdf_at_t_low_tail, 1-cdf_at_t_upp_tail)
+            else:
+                unbiased = 2*min(cdf_at_t, 1-cdf_at_t)
+                valid = 2*min(cdf_at_t_low_tail, 1-cdf_at_t_upp_tail)
+                return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+        
+        elif alternative == "greater":
+            print("Computing one-sided p-value with alternative set to greater")
+            if type == "unbiased":
+                return 1-cdf_at_t
+            elif type == "valid":
+                return 1-cdf_at_t_upp_tail
+            else:
+                unbiased = 1-cdf_at_t
+                valid = 1-cdf_at_t_upp_tail
+                return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+        
         else:
-            unbiased = cdf_at_t 
-            valid = cdf_at_t_low_tail
-            return [unbiased, valid]
-            #return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+            print("Computing one-sided p-value with alternative set to less")
+            if type == "unbiased":
+                return cdf_at_t
+            elif type == "valid":
+                return cdf_at_t_low_tail
+            else:
+                unbiased = cdf_at_t 
+                valid = cdf_at_t_low_tail
+                return "unbiased: " + str(unbiased) + ", valid: " + str(biased)

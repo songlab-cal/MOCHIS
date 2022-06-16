@@ -10,28 +10,28 @@ def _simplex_sample(n, N):
         res.append(np.array( k / sum(k)))
     return np.array(res)
 
-def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=None, force_discrete=False):
+def mochis_py(x, p, wList, alternative="two.sided", approx="resample", n_mom=100, type="unbiased", resamp_number=5000, y=None, force_discrete=False):
     '''
     Flexible Non-Parametric One- and Two-Sample Tests
 
-    Given data consisting of either a single sample \eqn{\boldsymbol{x}=(x_1,\ldots,x_k)}, 
-    or two samples \eqn{\boldsymbol{x}=(x_1,\ldots,x_k)} and \eqn{\boldsymbol{y}=(y_1,\ldots,y_n)}, 
+    Given data consisting of either a single sample :math:`\\boldsymbol{x}=(x_1,\\ldots,x_k)`, 
+    or two samples :math:`\\boldsymbol{x}=(x_1,\\ldots,x_k)` and :math:`\\boldsymbol{y}=(y_1,\\ldots,y_n)`, 
     this function uses summary statistics computed on weighted linear combinations of powers of 
-    the spacing statistics \eqn{S_k} (former) or \eqn{S_{n,k}} (latter). 
+    the spacing statistics :math:`S_k` (former) or :math:`S_{n,k}` (latter). 
 
     More precisely, this function does the following:
 
-    For a single sample \eqn{x}, the function tests for uniformity of its entries. When \eqn{p=2}
-    and a particular choice of \eqn{\boldsymbol{w}} is specified, we recover Greenwood's test. 
+    For a single sample :math:`x`, the function tests for uniformity of its entries. When :math:`p=2`
+    and a particular choice of :math:`\\boldsymbol{w}` is specified, we recover Greenwood's test. 
 
-    For two samples, the function tests the null of \eqn{\boldsymbol{x}} and \eqn{\boldsymbol{y}} 
+    For two samples, the function tests the null of :math:`\\boldsymbol{x}` and :math:`\\boldsymbol{y}` 
     being drawn from the same distribution (i.e., stochastic equality), against flexible alternatives 
-    that correspond to specific choices of the test statistic parameters, \eqn{\boldsymbol{w}} (weight vector) 
-    and \eqn{p} (power). These parameters not only determine the test statistic 
-    \eqn{||S_k||_{p,\boldsymbol{w}}^p=\sum_{j=1}^k w_iS_{k}[j]^p} (analogously defined for 
-    \eqn{||S_{n,k}||_{p,\boldsymbol{w}}^p}), but also encode alternative hypotheses
-    ranging from different populational means (i.e., \eqn{\mu_x \neq \mu_y}), different 
-    populational spreads (i.e., \eqn{\sigma^2_x \neq \sigma^2_y}), etc. 
+    that correspond to specific choices of the test statistic parameters, :math:`\\boldsymbol{w}` (weight vector) 
+    and :math:`p` (power). These parameters not only determine the test statistic 
+    :math:`||S_k||_{p,\\boldsymbol{w}}^p=\\sum_{j=1}^k w_iS_{k}[j]^p` (analogously defined for 
+    :math:`||S_{n,k}||_{p,\boldsymbol{w}}^p`), but also encode alternative hypotheses
+    ranging from different populational means (i.e., :math:`\\mu_x \\neq \\mu_y`), different 
+    populational spreads (i.e., :math:`\\sigma^2_x \\neq \\sigma^2_y`), etc. 
 
     Additional tuning parameters include (1) choice of p-value computation (one- or two-sided);
     (2) approximation method (moment-based such as Bernstein, Chebyshev or Jacobi, or resampling-based); 
@@ -42,7 +42,7 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
 
     (4/21/22) Currently, only resampling and Gaussian asymptotics are supported. Both are efficient and well-calibrated.
 
-    (4/14/22) Currently, for \eqn{n\geqslant 100} and \eqn{k\geqslant 50} such that \eqn{\frac{k}{n}\geqslant 0.001}, function
+    (4/14/22) Currently, for :math:`n\\geqslant 100` and :math:`k\\geqslant 50` such that :math:`\\frac{k}{n}\\geqslant 0.001`, function
     automatically uses Gaussian approximation to the null.
     
     Depends on: functions in `auxiliary.py`
@@ -56,17 +56,19 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
     p: int
         Exponent value in defining test statistic (must be integer)
     wList: Python float list or float numpy array
-        Vector of weights. It should have length equal to \eqn{x} when \eqn{y} is `NULL`,
-        and one more than the length of \eqn{x} when \eqn{y} is not `NULL`
+        Vector of weights. It should have length equal to :math:`x` when :math:`y` is `NULL`,
+        and one more than the length of :math:`x` when :math:`y` is not `NULL`
         alternative How p-value should be computed; i.e., a character specifying the alternative hypothesis, 
         must be one of "`two.sided`", "`greater`" or "`less`"
     approx: str
-        Which approximation method to use (choose `resample`, `bernstein`, `chebyshev`, `jacobi`)
+        Which approximation method to use (choose "`resample`", "`bernstein`", "`chebyshev`", "`jacobi`")
     n_mom: int
         The number of moments to accompany the approximation (recommended 200, if not at least 100)
     resamp_number: int
-        Number of \eqn{k}-compositions of \eqn{n} or simplex vectors in \eqn{[0,1]^k}  to draw
-        force_discrete In the two-sample case, whether to use discrete moments even if \eqn{n} is large enough (default is `FALSE`)
+        Number of :math:`k`-compositions of :math:`n` or simplex vectors in :math:`[0,1]^k`  to draw
+        force_discrete In the two-sample case, whether to use discrete moments even if :math:`n` is large enough (default is `FALSE`)
+    type: str
+        Character string that should be one of "`unbiased`", "`valid`" or "`both`"
     
     Returns
     -------
@@ -85,16 +87,50 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
     mochis_py(x = [abs(np.random.normal()) for i in range(10)], y = [abs(np.random.normal()) for i in range(100)], p = 2, wList = [1 for i in range(11)], alternative = "two.sided", approx = "jacobi", n_mom = 200) 
     mochis_py(x = [abs(np.random.normal()) for i in range(30)], y = [abs(np.random.normal()) for i in range(100)], p = 2, wList = [1 for i in range(11)], alternative = "two.sided", approx = "resample", resamp_number = 5000)
     '''
-    if type != "unbiased" or type != "valid" or type != "both":
-        raise IOError("")
+    # Check that arguments are correct
     
-    # 1. Get numbr of bins
+    # Check x and y are compatible
+    if y is not None:
+        if not len(x) <= len(y):
+            raise IOError('Length of x is larger than length of y, '
+                'swap the samples so that x is shorter than y.')
+    
+    # Check p is a positive integer
+    if not p > 0 & (np.abs(p - np.round_(p)) < np.sqrt(np.finfo(float).eps)):
+        raise IOError('Currently only supporting positive integer values of p. '
+            'Check that p is a positive integer.')
+    
+    # Check that wList is compatible with x and y
+    if y is None:
+        if not len(x) == len(wList):
+            raise IOError('Length of wList must be same as length '
+                'of the sample, x.')
+    else:
+        if not len(x)+1 == len(wList):
+            raise IOError('Length of wList must be one more than '
+                'length of smaller sample, x.')
+    
+    # Check that alternative is well-defined
+    if not (alternative == "two.sided" or alternative == "greater" or alternative == "less"):
+        raise IOError('Please specify a valid alternative '
+            '(two.sided, greater or less)')
+    
+    # Check that approx is well-defined
+    if not (approx == "resample"):
+        raise IOError('This version does not currently support the use of '
+            'moment-based approximation. Please use resample instead.')
+    
+    # Check type is well-defined
+    if not (type == "unbiased" or type == "valid" or type == "both"):
+        raise IOError('The type argument must be one of unbiased, valid or both.')
+    
+    # 1. Get number of bins
     k = len(x) + 1
-
+    
     # 2. Normalize weights
     print("Normalizing weight vector...")
     wList = [i/max(wList) for i in wList]
-
+    
     # 3. Compute test statistic t and return its p-value
     # 3.1 Case 1: y is not NULL
     if y is not None:
@@ -103,19 +139,17 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
         x_ordered = np.insert(x_ordered, 0, -math.inf)
         x_ordered = np.append(x_ordered, math.inf) 
         n = len(y) # get sample size / number of balls
-
-
+        
         # Construct Snk
         snk = []
         for i in range(k):
             snk.append(((x_ordered[i] <= y) & (y < x_ordered[i+1])).sum())
-
         
         # Construct t
         t_arr = [((snk[i]/n)**p) * wList[i] for i in range(k)]
         t = sum(t_arr)
         print("The test statistic for the data is ", t)
-
+        
         # Decide on an approximation:
         # First, decide whether to use large n, large k asymptotics
         if n >= 100 and k >= 50 and k/n >= 1e-3 and (p==1 or p==2):
@@ -134,40 +168,38 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
                 offdiag_sum = np.outer(wList, wList).sum() - sum([i**2 for i in wList])
                 coeff_offdiag_sum = (k/n+1) * (6/n**2+k*(3+k*(k-2))/n**2-24/n+8*(k-1)*k/n+8*(3+2*k)) / (k**2*(1+k)**2*(2+k)*(3+k))
                 second_moment = sum_of_wj2s * coeff_sum_of_wj2s - offdiag_sum * coeff_offdiag_sum
-
             z_score = (t - first_moment) / second_moment**(1/2)
-
+            
             if alternative == "one.sided":
                 return min(scipy.stats.norm.cdf(z_score), scipy.stats.norm.cdf(-1*z_score))
             else:
                 return 2*min(scipy.stats.norm.cdf(z_score), scipy.stats.norm.cdf(-1*z_score))
         elif approx == "resample":
             print("Using resampling approach, with resampling number 5000, to approximate p-value...")
-            return get_composition_pvalue(t=t, n=n, k=k, p=p, wList=wList, alternative=alternative, resamp_number=5000, type=unbiased)
+            return get_composition_pvalue(t=t, 
+                n=n, k=k, p=p, wList=wList, alternative=alternative, resamp_number=resamp_number, type=type)
         elif n >= 100 and not force_discrete:
             print("Sample size, n, is large enough, using Sk distribution...")
-
             # compute continuous moments
             print("Computing continuous moments...")
             moment_seq = continuous_moments(m=n_mom, p=p, k=k, wList=wList)
-
             # compute and return p-value
             if approx == 'bernstein':
                 return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
             else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative, type="unbiased")
+                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
         else:
             print("Using SnK distribution...")
             # compute discrete moments
             print("Computing discrete moments...")
-
+            
             moment_seq = discrete_moments(m=n_mom, n=n, k=k, p=p, wList=wList)
-
+            
             # compute and return p-value
             if approx == 'bernstein':
                 return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
             else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative, type="unbiased")
+                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
     
     # y is null -> use continuous moments
     else:
@@ -175,14 +207,13 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
         for entry in x:
             assert entry >= 0
        
-        
         # construct Sk
         sum_x = sum(x)
         Sk = [i/sum_x for i in x]
-
+        
         # construct t
         t = sum((Sk[i]**p)*wList[i] for i in range(len(wList)))
-
+        
         # decide on approximation
         if approx == "resample":
             print("Using resampling approach on continuous simplex, with resampling number " + str(resamp_number) + ", to approximate p-value...")
@@ -191,7 +222,7 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
             cdf_at_t = np.mean(resampled_ts < t)
             cdf_at_t_upp_tail = 1 - np.mean(np.append(resampled_ts,[t]) >= t)
             cdf_at_t_low_tail = np.mean(np.append(resampled_ts,[t]) <= t)
-
+            
             if alternative == "two.sided":
                 print("Computing two-sided p-value")
                 if type == "unbiased":
@@ -201,7 +232,8 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
                 else:
                     unbiased = 2*min(cdf_at_t, 1-cdf_at_t)
                     valid = 2*min(cdf_at_t_low_tail, 1-cdf_at_t_upp_tail)
-                    return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+                    return [unbiased, valid]
+                    #return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
             
             elif alternative == "greater":
                 print("Computing one-sided p-value with alternative set to greater")
@@ -212,7 +244,8 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
                 else:
                     unbiased = 1-cdf_at_t
                     valid = 1-cdf_at_t_upp_tail
-                    return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
+                    return [unbiased, valid]
+                    #return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
             
             else:
                 print("Computing one-sided p-value with alternative set to less")
@@ -223,18 +256,17 @@ def mochis_py(x, p, wList, alternative, approx, n_mom, resamp_number=5000, y=Non
                 else:
                     unbiased = cdf_at_t 
                     valid = cdf_at_t_low_tail
-                    return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
-        
+                    return [unbiased, valid]
+                    #return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
         else:
-        
             # construct moments
             moment_seq = continuous_moments(m=n_mom, p=p, k=k, wList=wList)
-
+            
             # compute and return p-value
             if approx == 'bernstein':
                 return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
             else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative, type="unbiased")
+                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
 
 
 
