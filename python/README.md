@@ -6,28 +6,31 @@
 
 2. Download anaconda and create a virtual environment.
 ```
-conda create -n [NAME] python==3.8.5
+conda create -n [NAME] python==3.9
 conda activate [NAME]
 ```
 
-3. (Install package dependencies) Install the following packages in Python if you don't already have them installed. 
-    - [**gmp2**](https://pypi.org/project/gmpy2/)
+3. Install package dependencies within the virtual environment
     - [**ray**](https://docs.ray.io/en/latest/installation.html)
-    - [**numpy**](https://numpy.org/)
+    - [**combalg-py**]([https://numpy.org/](https://pythonhosted.org/combalg-py/))
     
 ```
-conda install -c conda-forge gmpy2
-conda install numpy==1.19.2
-conda install --name [NAME] pip
 pip install ray
+pip install combalg-py
 ```
 
-4. (Setup lookup table files) Create a directory called `chebyshev`, then unzip `chebyshev.zip` and put all folders (`m25`, `m50`, etc.) under `chebyshev`. Do the same for `jacobi`.  
+4. Install MOCHIS
+```
+[TODO]
+pip install -i [TODO] MOCHIS==0.0.0
+```
+
+5. (Setup lookup table files) Create a directory called `chebyshev`, then unzip `chebyshev.zip` and put all folders (`m25`, `m50`, etc.) under `chebyshev`. Do the same for `jacobi`.  
 
     At this stage, you should have the following directory structure under your current working directory.
 
-    - `main_draft0.py`
-    - `local_functions.py`
+    - `mochis.py`
+    - `auxiliary.py`
     - `chebyshev`
         - `m25`
         - `m50`
@@ -64,6 +67,3 @@ mochis_py(x=x0, y=y0, p=2, wList=[1 for i in range(11)], alternative="two.sided"
 # Computing continuous moments...
 # 0.68166445583817
 ```
-
-
-
