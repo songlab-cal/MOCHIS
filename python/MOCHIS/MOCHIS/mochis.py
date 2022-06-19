@@ -160,34 +160,21 @@ def mochis_py(x, p, wList, alternative="two.sided", approx="resample", n_mom=100
             # Compute analytical mean and variance
             if p==1:
                 first_moment = sum(wList) / k 
-                print("first_moment ", first_moment)
                 second_moment = ((k/n+1)/((k**2)*(k+1))) * (wList *((k*np.identity(k) - np.outer(np.ones(k),np.ones(k))) @ wList)).sum()
-                print("second_moment ", second_moment)
                 
             else: # p = 2
                 first_moment = ((2+k/n-1/n) / ((k+1)*k)) * sum(wList)
                 sum_of_wj2s = sum([i**2 for i in wList])
-                print("sum_of_wj2s ", sum_of_wj2s)
                 coeff_sum_of_wj2s = (k-1) * (k/n+1) * (2+k/n-1/n) * (12-6/n+k*(k/n+10-5/n)) / ((k**2)*((1+k)**2)*(2+k)*(3+k))
-                print("coeff_sum_of_wj2s ", coeff_sum_of_wj2s)
                 offdiag_sum = np.outer(wList, wList).sum() - sum([i**2 for i in wList])
-                print("offdiag_sum ", offdiag_sum)
                 coeff_offdiag_sum = (k/n+1) * (6/n**2+k*(3+k*(k-2))/n**2-24/n+8*(k-1)*k/n+8*(3+2*k)) / (k**2*(1+k)**2*(2+k)*(3+k))
-                print("coeff_offdiag_sum ", coeff_offdiag_sum)
                 second_moment = sum_of_wj2s * coeff_sum_of_wj2s - offdiag_sum * coeff_offdiag_sum
-                print("first_moment ", first_moment)
-                print("second_moment ", second_moment)
-            
+                
             
             z_score = (t - first_moment) / second_moment**(1/2)
-            print("z_score ", z_score)
             
 
             if alternative == "two.sided":
-                print("FUCK")
-                print("norm.cdf(z_score)", norm.cdf(z_score))
-                print("-norm.cdf(z_score)", norm.cdf(-1*z_score))
-                print(2*min(norm.cdf(z_score), norm.cdf(-1*z_score)))
                 return 2*min(norm.cdf(z_score), norm.cdf(-1*z_score))
             elif alternative == "greater":
                 return norm.cdf(-1*z_score)
