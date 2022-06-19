@@ -3,11 +3,18 @@ Unit tests for MOCHIS
 
 @author: Alan Aw and Rachel Xurui Chen
 """
-from MOCHIS.auxiliary import get_composition_pvalue
-from MOCHIS.auxiliary import _compositions
-from MOCHIS.auxiliary import _single_comp
-from MOCHIS.mochis import mochis_py
+
+import sys
+sys.path.append('..')
+
+
+from auxiliary import get_composition_pvalue
+from auxiliary import _compositions
+from auxiliary import _single_comp
+from mochis import mochis_py
 import numpy as np
+
+import math
 
 
 def test_single_comp():
@@ -17,22 +24,22 @@ def test_single_comp():
         k = np.random.random_integers(low=5,high=20)
         one_comp = _single_comp(n=n,k=k)
         cert_arr.append(np.sum(one_comp)==n and len(one_comp)==k)
-    assert cert_arr.all(), '_single_comp failed test'
+    assert np.array(cert_arr).all(), '_single_comp failed test'
 
 
 def test_compositions():
     cert_arr = []
-    vec_len=np.vectorize(len)
-    vec_sum=np.vectorize(sum)
+    #vec_len=np.vectorize(len)
+    #vec_sum=np.vectorize(sum)
     for i in range(100):
         n = np.random.random_integers(low=30,high=100)
         k = np.random.random_integers(low=5,high=20)
         nsamp = np.random.random_integers(low=20,high=30)
-        list_of_comps = _compositions(n=n,k=k,nsamples=nsamp)
-        cert_arr.append(vec_len(list_of_comps)==[k for i in range(nsamp)] and \
-            vec_sum(list_of_comps)==[n for i in range(nsamp)] and \
+        list_of_comps = _compositions(n=n,k=k,nsample=nsamp)
+        cert_arr.append([len(i) for i in list_of_comps]==[k for i in range(nsamp)] and \
+            [sum(i) for i in list_of_comps]==[n for i in range(nsamp)] and \
             len(list_of_comps) == nsamp)
-    assert cert_arr.all(), '_compositions failed test'
+    assert np.array(cert_arr).all(), '_compositions failed test'
 
 def test_p1_composition():
     p = 1
@@ -43,6 +50,7 @@ def test_p1_composition():
         y = np.random.default_rng().normal(0, 1, 30)
         x_ordered = np.sort(np.array(x))
         x_ordered = np.insert(x_ordered, 0, -math.inf)
+        x_ordered = np.append(x_ordered, math.inf)
         k = len(x) + 1
         n = len(y)
         
@@ -72,6 +80,7 @@ def test_p2_composition():
         y = np.random.default_rng().normal(0, 1, 30)
         x_ordered = np.sort(np.array(x))
         x_ordered = np.insert(x_ordered, 0, -math.inf)
+        x_ordered = np.append(x_ordered, math.inf)
         k = len(x) + 1
         n = len(y)
         
@@ -118,3 +127,11 @@ def test_p2_gaussian():
     
     assert np.allclose([np.mean(p_val_vec),np.var(p_val_vec)], [0.5,1/12]),  'Distribution of'
     ' p-values (p=2) is not uniform'
+
+if __name__ == "__main__":
+    test_single_comp()
+    test_compositions()
+    test_p1_composition()
+    test_p2_composition()
+    test_p1_gaussian()
+    test_p2_gaussian()
