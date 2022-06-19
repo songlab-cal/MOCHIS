@@ -971,7 +971,7 @@ def get_composition_pvalue(t, n, k, p, wList, alternative, resamp_number, type):
     cdf_at_t_low_tail = np.mean(np.append(resampled_ts,[t]) <= t)
     
     if alternative == "two.sided":
-        print("Computing two-sided p-value")
+        #print("Computing two-sided p-value")
         if type == "unbiased":
             return 2*min(cdf_at_t, 1-cdf_at_t)
         elif type == "valid":
