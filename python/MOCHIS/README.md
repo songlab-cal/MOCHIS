@@ -1,44 +1,7 @@
-# Python User Manual
+## Description: 
+In single cell genomics, differential analysis enables the discovery of groups of genes implicating important biological processes such as cell differentiation and aging. Current non-parametric tests of differential gene expression are limited by their diminished power against alternatives characterized by shifts in spread (such as variance) rather than measures of centrality (such as mean or median). This package provides a flexible family of two-sample tests, which is based on theoretical work demonstrating the connection between widely used non-parametric tests and spacing statistics (Erdmann-Pham et al., 2022+). 
 
-1. (Download required files) Download this directory. Also download the following zip files.
-    - `chebyshev.zip` ([link](https://www.dropbox.com/s/t2ml80d3pl6p83q/chebyshev.zip?dl=0))
-    - `jacobi.zip` ([link](https://www.dropbox.com/s/2envgy7q99ntkmj/jacobi.zip?dl=0))
-
-2. Download anaconda and create a virtual environment.
-```
-conda create -n [NAME] python==3.8.5
-conda activate [NAME]
-```
-
-3. (Install package dependencies) Install the following packages in Python if you don't already have them installed. 
-    - [**gmp2**](https://pypi.org/project/gmpy2/)
-    - [**ray**](https://docs.ray.io/en/latest/installation.html)
-    - [**numpy**](https://numpy.org/)
-    
-```
-conda install -c conda-forge gmpy2
-conda install numpy==1.19.2
-conda install --name [NAME] pip
-pip install ray
-```
-
-4. (Setup lookup table files) Create a directory called `chebyshev`, then unzip `chebyshev.zip` and put all folders (`m25`, `m50`, etc.) under `chebyshev`. Do the same for `jacobi`.  
-
-    At this stage, you should have the following directory structure under your current working directory.
-
-    - `main_draft0.py`
-    - `local_functions.py`
-    - `chebyshev`
-        - `m25`
-        - `m50`
-        - `...`
-    - `jacobi` 
-        - `m25`
-        - `m50`
-        - `...`
-
-## Examples
-
+## Examples:
 We simulate two samples and then show how we can run our tests on them. We set the seed for our simulation to ensure reproducibility.
 
 ```
@@ -64,6 +27,3 @@ mochis_py(x=x0, y=y0, p=2, wList=[1 for i in range(11)], alternative="two.sided"
 # Computing continuous moments...
 # 0.68166445583817
 ```
-
-
-
