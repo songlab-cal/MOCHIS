@@ -12,7 +12,7 @@ conda activate [NAME]
 
 3. Install package dependencies within the virtual environment
     - [**ray**](https://docs.ray.io/en/latest/installation.html)
-    - [**combalg-py**]([https://numpy.org/](https://pythonhosted.org/combalg-py/))
+    - [**combalg-py**](https://pythonhosted.org/combalg-py/)
     
 ```
 pip install ray
