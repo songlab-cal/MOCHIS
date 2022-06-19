@@ -4,6 +4,7 @@ Unit tests for MOCHIS
 @author: Alan Aw and Rachel Xurui Chen
 """
 
+
 import sys
 sys.path.append('..')
 
@@ -16,6 +17,18 @@ import numpy as np
 
 import math
 
+import os
+
+#Source: https://stackoverflow.com/questions/8391411/how-to-block-calls-to-print#:~:text=If%20you%20don't%20want,the%20top%20of%20the%20file.    
+class HiddenPrints:
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
+
 
 def test_single_comp():
     cert_arr = []
@@ -25,6 +38,7 @@ def test_single_comp():
         one_comp = _single_comp(n=n,k=k)
         cert_arr.append(np.sum(one_comp)==n and len(one_comp)==k)
     assert np.array(cert_arr).all(), '_single_comp failed test'
+    print("test_single_comp PASS")
 
 
 def test_compositions():
@@ -40,6 +54,7 @@ def test_compositions():
             [sum(i) for i in list_of_comps]==[n for i in range(nsamp)] and \
             len(list_of_comps) == nsamp)
     assert np.array(cert_arr).all(), '_compositions failed test'
+    print("test_compositions PASS")
 
 def test_p1_composition():
     p = 1
@@ -66,9 +81,12 @@ def test_p1_composition():
         p_val = get_composition_pvalue(t=t,n=n,k=k,p=p,wList=wList,alternative="two.sided", resamp_number=5000,type="valid")
         p_val_vec.append(p_val)
     
-    assert np.allclose([np.mean(p_val_vec),np.var(p_val_vec)], [0.5,1/12]),  'Distribution of'
-    ' p-values (p=1) is not uniform'
+    
+    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=1) is not uniform"
+    assert abs(np.var(p_val_vec) - 1/12) <= 0.01, "Variance deviates too much - distribution of p-values (p=1) is not uniform"
+
     assert np.min(p_val_vec) > 0,  'Minimum p-value (p=1) is not positive'
+    print("test_p1_composition PASS")
 
 
 def test_p2_composition():
@@ -96,9 +114,11 @@ def test_p2_composition():
         p_val = get_composition_pvalue(t=t,n=n,k=k,p=p,wList=wList,alternative="two.sided", resamp_number=5000,type="valid")
         p_val_vec.append(p_val)
     
-    assert np.allclose([np.mean(p_val_vec),np.var(p_val_vec)], [0.5,1/12]),  'Distribution of'
-    ' p-values (p=2) is not uniform'
+    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=1) is not uniform"
+    assert abs(np.var(p_val_vec) - 1/12) <= 0.01, "Variance deviates too much - distribution of p-values (p=1) is not uniform"
+
     assert np.min(p_val_vec) > 0,  'Minimum p-value (p=2) is not positive'
+    print("test_p2_composition PASS")
 
 
 def test_p1_gaussian():
@@ -108,11 +128,14 @@ def test_p1_gaussian():
     for i in range(1000):
         x = np.random.default_rng().normal(0, 1, 50)
         y = np.random.default_rng().normal(0, 1, 100)
-        p_val = mochis_py(x=x, y=y, p=p, wList=wList)
+        with HiddenPrints():
+            p_val = mochis_py(x=x, y=y, p=p, wList=wList)
         p_val_vec.append(p_val)
     
-    assert np.allclose([np.mean(p_val_vec),np.var(p_val_vec)], [0.5,1/12]),  'Distribution of'
-    ' p-values (p=1) is not uniform'
+    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=1) is not uniform"+str(np.mean(p_val_vec))
+    assert abs(np.var(p_val_vec) - 1/12) <= 0.01, "Variance deviates too much - distribution of p-values (p=1) is not uniform"+str(np.var(p_val_vec))
+    print("test_p1_gaussian PASS")
+
 
 
 def test_p2_gaussian():
@@ -122,11 +145,16 @@ def test_p2_gaussian():
     for i in range(1000):
         x = np.random.default_rng().normal(0, 1, 50)
         y = np.random.default_rng().normal(0, 1, 100)
-        p_val = mochis_py(x=x, y=y, p=p, wList=wList)
+        
+        with HiddenPrints():
+            p_val = mochis_py(x=x, y=y, p=p, wList=wList)
         p_val_vec.append(p_val)
     
-    assert np.allclose([np.mean(p_val_vec),np.var(p_val_vec)], [0.5,1/12]),  'Distribution of'
-    ' p-values (p=2) is not uniform'
+    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=2) is not uniform"+str(np.mean(p_val_vec))
+    assert abs(np.var(p_val_vec) - 1/12) <= 0.01, "Variance deviates too much - distribution of p-values (p=2) is not uniform"+str(np.var(p_val_vec))
+    print("test_p2_gaussian PASS")
+
+
 
 if __name__ == "__main__":
     test_single_comp()
