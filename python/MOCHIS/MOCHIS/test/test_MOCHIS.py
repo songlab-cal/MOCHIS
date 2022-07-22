@@ -132,8 +132,8 @@ def test_p1_gaussian():
             p_val = mochis_py(x=x, y=y, p=p, wList=wList)
         p_val_vec.append(p_val)
     
-    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=1) is not uniform"+str(np.mean(p_val_vec))
-    assert abs(np.var(p_val_vec) - 1/12) <= 0.01, "Variance deviates too much - distribution of p-values (p=1) is not uniform"+str(np.var(p_val_vec))
+    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=1) is not uniform: "+str(np.mean(p_val_vec))
+    assert abs(np.var(p_val_vec) - 1/12) <= 0.02, "Variance deviates too much - distribution of p-values (p=1) is not uniform: "+str(np.var(p_val_vec))
     print("test_p1_gaussian PASS")
 
 
@@ -150,8 +150,8 @@ def test_p2_gaussian():
             p_val = mochis_py(x=x, y=y, p=p, wList=wList)
         p_val_vec.append(p_val)
     
-    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=2) is not uniform"+str(np.mean(p_val_vec))
-    assert abs(np.var(p_val_vec) - 1/12) <= 0.01, "Variance deviates too much - distribution of p-values (p=2) is not uniform"+str(np.var(p_val_vec))
+    assert abs(np.mean(p_val_vec) - 0.5) <= 0.05, "Mean deviates too much - distribution of p-values (p=2) is not uniform: "+str(np.mean(p_val_vec))
+    assert abs(np.var(p_val_vec) - 1/12) <= 0.02, "Variance deviates too much - distribution of p-values (p=2) is not uniform: "+str(np.var(p_val_vec))
     print("test_p2_gaussian PASS")
 
 

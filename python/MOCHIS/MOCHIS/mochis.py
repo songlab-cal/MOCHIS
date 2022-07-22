@@ -186,28 +186,9 @@ def mochis_py(x, p, wList, alternative="two.sided", approx="resample", n_mom=100
             print("Using resampling approach, with resampling number 5000, to approximate p-value...")
             return get_composition_pvalue(t=t, 
                 n=n, k=k, p=p, wList=wList, alternative=alternative, resamp_number=resamp_number, type=type)
-        elif n >= 100 and not force_discrete:
-            print("Sample size, n, is large enough, using Sk distribution...")
-            # compute continuous moments
-            print("Computing continuous moments...")
-            moment_seq = continuous_moments(m=n_mom, p=p, k=k, wList=wList)
-            # compute and return p-value
-            if approx == 'bernstein':
-                return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
-            else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
         else:
-            print("Using SnK distribution...")
-            # compute discrete moments
-            print("Computing discrete moments...")
+            raise IOError('This version does not currently support the use of moment-based approximation. Please use `resample` instead.')
             
-            moment_seq = discrete_moments(m=n_mom, n=n, k=k, p=p, wList=wList)
-            
-            # compute and return p-value
-            if approx == 'bernstein':
-                return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
-            else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
     
     # y is null -> use continuous moments
     else:
@@ -267,14 +248,7 @@ def mochis_py(x, p, wList, alternative="two.sided", approx="resample", n_mom=100
                     return [unbiased, valid]
                     #return "unbiased: " + str(unbiased) + ", valid: " + str(biased)
         else:
-            # construct moments
-            moment_seq = continuous_moments(m=n_mom, p=p, k=k, wList=wList)
-            
-            # compute and return p-value
-            if approx == 'bernstein':
-                return get_Bernstein_pvalue(t=t, n_mom=n_mom, p=p, k=k, moment_seq=moment_seq, alternative=alternative, wList=wList)
-            else:
-                return get_moment_pvalue(t=t, n_mom=n_mom, moment_seq=moment_seq, method=approx, alternative=alternative)
+            raise IOError('This version does not currently support the use of moment-based approximation. Please use `resample` instead.')
 
 
 
